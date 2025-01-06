@@ -1,0 +1,37 @@
+{
+    "name": "datalinx/omnipay-nestpay",
+    "type": "library",
+    "description": "NestPay (Slovenia) driver for the Omnipay payment processing library",
+    "keywords": [
+        "nestpay",
+        "gateway",
+        "merchant",
+        "omnipay",
+        "pay",
+        "payment"
+    ],
+    "homepage": "https://github.com/datalinx/omnipay-nestpay",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "DataLinx",
+            "email": "info@datalinx.si"
+        },
+        {
+            "name": "Omnipay NestPay Contributors",
+            "homepage": "https://github.com/datalinx/omnipay-nestpay/contributors"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "Omnipay\\NestPay\\" : "src/" }
+    },
+    "require": {
+        "ext-libxml": "*",
+        "omnipay/common": "~2.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
+        }
+    }
+}
