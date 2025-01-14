@@ -4,27 +4,43 @@ namespace Omnipay\NestPay\Message;
 
 trait HasHashing
 {
-    /**
-     * Generate Hash signature as seen in the NestPay-provided example.
-     */
-    protected function getHash(array $data): string
+	/**
+	 * Generate Hash signature as seen in the NestPay-provided example.
+	 *
+	 * Hashing algorithm defaults to v2, since it appears v3 is not yet fully supported.
+	 *
+	 * @param array $data Data to be hashed
+	 * @param int $version Hashing algorithm (default: 2)
+	 * @return string
+	 */
+    protected function getHash(array $data, int $version = 2): string
     {
         $values = [];
 
-		$skip = [
-			'encoding',
-			'hash',
-		];
+		switch ($version) {
+			case 2:
+				foreach ($data as $value) {
+					$values[] = $this->escape($value);
+				}
+				break;
 
-		ksort($data, SORT_NATURAL | SORT_FLAG_CASE);
+			case 3:
+			default:
+				$skip = [
+					'encoding',
+					'hash',
+				];
 
-		foreach ($data as $key => $value) {
-			if ( ! in_array(strtolower($key), $skip, true)){
-				$values[] = $this->escape($value ?? '');
-			}
+				ksort($data, SORT_NATURAL | SORT_FLAG_CASE);
+
+				foreach ($data as $key => $value) {
+					if ( ! in_array(strtolower($key), $skip, true)){
+						$values[] = $this->escape($value ?? '');
+					}
+				}
+
+				$values[] = $this->escape($this->getStoreKey());
 		}
-
-        $values[] = $this->escape($this->getStoreKey());
 
         return base64_encode(pack('H*', hash('sha512', implode('|', $values))));
     }

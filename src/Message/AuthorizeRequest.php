@@ -125,7 +125,7 @@ class AuthorizeRequest extends AbstractRequest
 			'clientid' => $this->getClientId(), // Note: this parameter name be passed with all lowercase characters!
             'storetype' => '3d_pay_hosting',
 			'trantype' => 'PreAuth',
-            'hashAlgorithm' => 'ver3',
+            'hashAlgorithm' => 'ver2',
             'rnd' => $this->getRandomString(),
 			'refreshtime' => 3,
 
@@ -154,7 +154,22 @@ class AuthorizeRequest extends AbstractRequest
             $data += $shipping->toArray(false);
         }
 
-        $data['hash'] = $this->getHash($data);
+		// Generate the hash from the specified parameters
+        $data['hash'] = $this->getHash([
+			$this->getClientId(),
+			$this->getOrderId(),
+			$this->getAmount(),
+			$this->getReturnUrl(),
+			$this->getErrorUrl(),
+			$data['trantype'],
+			'', // Instalment
+			$data['rnd'],
+			'', // Three empty values, as seen in the docs
+			'',
+			'',
+			$this->getCurrency(),
+			$this->getStoreKey(),
+		]);
 
         return $data;
     }

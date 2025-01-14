@@ -83,7 +83,7 @@ class AuthorizeResponse extends AbstractResponse {
 
     public function validate(): void
     {
-		$required = ['clientid', 'oid', 'HASH'];
+		$required = ['clientid', 'oid', 'HASH', 'HASHPARAMS', 'HASHPARAMSVAL'];
 
 		foreach ($required as $key) {
 			if ( ! isset($this->data[$key])) {
@@ -91,14 +91,34 @@ class AuthorizeResponse extends AbstractResponse {
 			}
 		}
 
-		/*
-		 * TODO Fix hash validation
-		$hash = $this->getHash($this->data);
+		$values = [];
+		$escaped_values = [];
+
+		$rx_hash_params = explode('|', $this->data['HASHPARAMS']); // Received list of parameters that are used for calculating hash
+
+		foreach ($rx_hash_params as $param) {
+			$vl = $this->data[$param] ?? '';
+
+			$values[] = $vl;
+			$escaped_values[] = $this->escape($vl);
+		}
+
+		$escaped_values[] = $this->escape($this->getStoreKey());
+
+		$our_hash_value_str = implode('|', $escaped_values);
+		$rx_hash_value_str = $this->data['HASHPARAMSVAL'] . '|' . $this->escape($this->getStoreKey()); // Received hash value string
+
+		if ($our_hash_value_str != $rx_hash_value_str) {
+			throw new InvalidResponseException('Invalid hash parameter values received in response from NestPay! Expected: '. $our_hash_value_str .', got: '. $rx_hash_value_str);
+		}
+
+		$values[] = $this->getStoreKey();
+
+		$hash = $this->getHash($values);
 
 		if ($hash !== $this->data['HASH']) {
 			throw new InvalidResponseException('Invalid hash received in response from NestPay! Expected: '. $hash .', got: '. $this->data['HASH']);
 		}
-		*/
 
 		if ($this->data['clientid'] !== $this->gateway->getClientId()) {
 			throw new InvalidResponseException('Invalid client ID received in response from NestPay! Expected: '. $this->gateway->getClientId() .', got: '. $this->data['clientid']);
